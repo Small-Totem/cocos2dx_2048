@@ -14,7 +14,7 @@ using namespace cocos2d::experimental;
 
 USING_NS_CC;
 
-//#define USE_LARGE_RESULUTION_SIZE
+#define USE_LARGE_RESULUTION_SIZE
 #ifdef USE_LARGE_RESULUTION_SIZE
 static cocos2d::Size designResolutionSize = cocos2d::Size(1920, 1080);
 #else

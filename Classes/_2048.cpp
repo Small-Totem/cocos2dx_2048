@@ -55,7 +55,7 @@ void _2048::generate_block(bool use_animation,bool force) {//force默认值为false(
 	}
 	
 	//不够好的实现,将就
-	while (1) {
+	while (true) {
 		int x = rand()%4, y = rand()%4;
 		if (num[x][y] == 0) {
 			//生成新数字的概率: 2 50% 4 40% 8 10%
@@ -380,6 +380,9 @@ void _2048::graphics_new_block(int x,int y) {
 		return;
 	}
 
+	if (num[x][y] == 0)
+		return;
+
 	/* 不用管,因为cocos2d::Node会自动释放,不会内存泄漏
 	if (_2048_block[x][y] != 0) {
 		printf("warning@graphics_new_block:override_block\n");
@@ -603,8 +606,7 @@ cocos2d::Vec2* _2048::get_num_from_position(int x, int y) {
 				x <= _2048_origin_x + (20 + _2048_block_size) * i &&
 				y >= _2048_origin_y + 20 + (20 + _2048_block_size) * (j - 1) &&
 				y <= _2048_origin_y + (20 + _2048_block_size) * j)
-				//fixme 这里不应该这样写(返回局部变量指针)  but it works.....    cpp他真的 我哭死
-				return &cocos2d::Vec2(i-1,j-1)/*(int*)(num + 4 * (i - 1) + (j - 1))*/;
+				return new cocos2d::Vec2(i-1,j-1)/*(int*)(num + 4 * (i - 1) + (j - 1))*/;
 		}
 	}
 	return nullptr;

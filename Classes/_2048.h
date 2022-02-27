@@ -3,21 +3,21 @@
 
 #include "cocos2d.h"
 
-//ÓÃÓÚ·ÅifÀïÃæ //ÒÑÆúÓÃ
+//ï¿½ï¿½ï¿½Ú·ï¿½ifï¿½ï¿½ï¿½ï¿½ //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //#define STR_EQU(str1,str2) (std::string(str1).compare(std::string(str2)) == 0) 
 
-//×÷±×Ïî
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 #define CHEAT_ENABLED
 
 
 class _2048
 {
 public:
-	/* Èç¹ûÓÐÊµ¼ÊÒÆ¶¯ÔòÎªtrue
-	ÓÃÓÚÅÐ¶ÏÊÖ»¬¶¯ÁËÈ´Ã»ÓÐ¿éÒÆ¶¯Ö®Çé¿ö
-	Õâ¸öÖµ³¤Ê±¼äÎªfalse,½ö ÒÆ¶¯ºó&&Éú³ÉÐÂ·½¿éÇ° Îªtrue */
+	/* ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½Æ¶ï¿½ï¿½ï¿½Îªtrue
+	ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½È´Ã»ï¿½Ð¿ï¿½ï¿½Æ¶ï¿½Ö®ï¿½ï¿½ï¿½
+	ï¿½ï¿½ï¿½Öµï¿½ï¿½Ê±ï¿½ï¿½Îªfalse,ï¿½ï¿½ ï¿½Æ¶ï¿½ï¿½ï¿½&&ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½Ç° Îªtrue */
 	bool move_status = false;
-	/*ÓÃÓÚÅÐ¶ÏµÈ´ý¶¯»­½áÊø²Å×öµÄÊÂ  ---> ¿éºÏ²¢Çé¿öµÄcallbackº¯Êý*/
+	/*ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ÏµÈ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  ---> ï¿½ï¿½Ï²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½callbackï¿½ï¿½ï¿½ï¿½*/
 	bool anim_end = true;
 	cocos2d::Scene* scene;
 	cocos2d::DrawNode* _2048_block[4][4] = {0};
@@ -26,7 +26,7 @@ public:
 	float _2048_origin_x;
 	float _2048_origin_y;
 
-	/*¶ÔÓ¦¹ØÏµ
+	/*ï¿½ï¿½Ó¦ï¿½ï¿½Ïµ
 	num[0][3] ...                 num[3][3]
 	num[0][2] ...
 	num[0][1] ...
@@ -45,15 +45,15 @@ public:
 	void init();
 	void print();
 
-	/*Èç¹ûÊÇÏòÉÏ,Ôò×î¶¥ÉÏÒ»²ã²»¹Ü,´Ó´Î¶¥²ã¿ªÊ¼ÍùÏÂ±éÀú,²¢ÅÐ¶ÏÊÇ·ñÒÆ¶¯/ºÏ²¢*/
+	/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½î¶¥ï¿½ï¿½Ò»ï¿½ã²»ï¿½ï¿½,ï¿½Ó´Î¶ï¿½ï¿½ã¿ªÊ¼ï¿½ï¿½ï¿½Â±ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½Ç·ï¿½ï¿½Æ¶ï¿½/ï¿½Ï²ï¿½*/
 	void up();
 	void down();
 	void left();
 	void right();
 
-	/* @return ¿ÕµÄ¿éÖ®ÊýÁ¿*/
+	/* @return ï¿½ÕµÄ¿ï¿½Ö®ï¿½ï¿½ï¿½ï¿½*/
 	int get_spare_count();
-	/* @param force ÊÇ·ñÇ¿ÖÆÉú³É*/
+	/* @param force ï¿½Ç·ï¿½Ç¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
 	void generate_block(bool use_animation=false,bool force=false);
 	void normal_generate();
 
@@ -67,18 +67,18 @@ public:
 	void print_game_over();
 	void game_over_onclick();
 
-	/*  @brief °ÑÆÁÄ»¾ø¶Ô×ø±ê×ªÎªnum[][]Ïà¶Ô×ø±ê
-		@return ×ø±ê´¦µÄ¿é¶ÔÓ¦µÄnum[][]
-		eg. Vec2(1,2)¼´¶ÔÓ¦num[1][2]*/
+	/*  @brief ï¿½ï¿½ï¿½ï¿½Ä»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªÎªnum[][]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		@return ï¿½ï¿½ï¿½ê´¦ï¿½Ä¿ï¿½ï¿½Ó¦ï¿½ï¿½num[][]
+		eg. Vec2(1,2)ï¿½ï¿½ï¿½ï¿½Ó¦num[1][2]*/
 	cocos2d::Vec2* get_num_from_position(int x, int y);
 
 
 
 private:
-	/*@return ²»È·¶¨µÄÄÇ¸öx»òy×ø±ê(Ïê¼ûÊµÏÖ´¦µÄ×¢ÊÍ)*/
+	/*@return ï¿½ï¿½È·ï¿½ï¿½ï¿½ï¿½ï¿½Ç¸ï¿½xï¿½ï¿½yï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½Êµï¿½Ö´ï¿½ï¿½ï¿½×¢ï¿½ï¿½)*/
 	int get_a_valid_block(int x,int y,int orientation);
 	bool judge_game_not_over(int x, int y);
-	cocos2d::Color4F get_color(int num);
+	static cocos2d::Color4F get_color(int num);
 };
 
 #endif

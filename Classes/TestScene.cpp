@@ -328,6 +328,8 @@ bool TestScene::init()
                     if (n == nullptr)
                         printf("get_num_from_position()->null\n");
                     else {
+                        _2048_->anim_end = false;
+
                         int _x = (int)(n->x);
                         int _y = (int)(n->y);
                         printf("get_num_from_position()->num[%d][%d]=%d\n", _x, _y, _2048_->num[_x][_y]);
@@ -341,6 +343,10 @@ bool TestScene::init()
                         _2048_->num[_x][_y] = 0;
 
                         _2048_->anim_end = true;
+                    }
+                    if (n != nullptr) {
+                        delete n;
+                        n = nullptr;
                     }
                 }
                 else {

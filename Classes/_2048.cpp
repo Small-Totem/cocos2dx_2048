@@ -1,7 +1,6 @@
 #include "_2048.h"
 #include "TestScene.h"
 
-#define _RGB(r,g,b) cocos2d::Color4F(cocos2d::Color4B(r,g,b,255))
 constexpr auto UP = 0;
 constexpr auto DOWN = 1;
 constexpr auto LEFT = 2;
@@ -85,6 +84,10 @@ void _2048::generate_block(bool use_animation,bool force) {//force默认值为false(
 }
 
 void _2048::normal_generate() {
+	//多次合并块时会多次调用这个函数(虽然在generate_block()里面还有判断,不会影响结果的正确性),
+	//加这个判断主要是为了不print多次...
+	if (!move_status)
+		return;
 	generate_block();
 	if (rand() % 10 == 0 && get_spare_count() != 0) {//10%概率再来一个
 		generate_block();
@@ -156,6 +159,10 @@ cocos2d::Color4F _2048::get_color(int num) {
 	case 2048:
 		return _RGB(255, 193, 193);
 	default:
+		if (num <= 0) //0是不该出现的数字(num[][]初始化为0,但作弊项可以改出0来)  就这样吧懒得改了
+			return _RGB(0, 0, 0);
+		if ((num & (num - 1)) != 0 || num == 1) //判断是不是2的幂或1
+			return _RGB(80, 0, 0);
 		return _RGB(255, 0, 0);
 	}
 }
@@ -169,7 +176,8 @@ bool _2048::judge_game_not_over(int x,int y) {
 	//好像会有重复的比较吧,懒得优化了
 	if (x >= 4 || y >= 4)
 		return false;
-	//这里vs2019报警告,但是其实没有问题
+	//这里vs2019和vs2022都报警告,但是其实没有问题
+	//别看了真的没有问题     把x + 1 <= 3改成x <= 2 就不报警告了...
 	if (x + 1 <= 3)
 		if(num[x][y] == num[x + 1][y])
 			return true;
@@ -195,13 +203,13 @@ void _2048::print_game_over() {
 	TestScene::drawRoundRect(game_over, cocos2d::Vec2(-_2048_block_size * 3 + 40 , -_2048_block_size + 40), cocos2d::Vec2(_2048_block_size * 3 - 40, _2048_block_size - 40),
 		24, 100, true, get_color(2048));
 
-	game_over->setScale(0.2);
-	game_over_label->setScale(0.2);
+	game_over->setScale(0.2f);
+	game_over_label->setScale(0.2f);
 
 	scene->addChild(game_over, 3);
 	scene->addChild(game_over_label, 3);
 	auto scale_animation = cocos2d::EaseIn::create(
-		cocos2d::ScaleTo::create(0.6, 1.0f), 0.3);
+		cocos2d::ScaleTo::create(0.6f, 1.0f), 0.3f);
 
 	game_over->runAction(scale_animation->clone());
 	game_over_label->runAction(scale_animation);
@@ -389,8 +397,8 @@ void _2048::graphics_new_block(int x,int y) {
 	_2048_block_label[x][y]->setPosition(_2048_origin_x + (20 + _2048_block_size) * (x + 1) - _2048_block_size / 2,
 		_2048_origin_y + (20 + _2048_block_size) * (y + 1) - _2048_block_size / 2);
 
-	_2048_block[x][y]->setScale(0.2);
-	_2048_block_label[x][y]->setScale(0.2);
+	_2048_block[x][y]->setScale(0.2f);
+	_2048_block_label[x][y]->setScale(0.2f);
 
 	TestScene::drawRoundRect(_2048_block[x][y], cocos2d::Vec2(-_2048_block_size / 2, -_2048_block_size / 2), cocos2d::Vec2(_2048_block_size / 2, _2048_block_size / 2),
 		24, 100, true, get_color(num[x][y]));
@@ -398,7 +406,7 @@ void _2048::graphics_new_block(int x,int y) {
 	scene->addChild(_2048_block[x][y], 2);
 	scene->addChild(_2048_block_label[x][y], 2);
 	auto scale_animation = cocos2d::EaseIn::create(
-		cocos2d::ScaleTo::create(0.4, 1.0f), 0.3);
+		cocos2d::ScaleTo::create(0.4f, 1.0f), 0.3f);
 
 	_2048_block[x][y]->runAction(scale_animation->clone());
 	_2048_block_label[x][y]->runAction(scale_animation);
@@ -444,7 +452,7 @@ void _2048::graphics_delete_block(int x, int y, bool use_anim) {
 		}
 	}
 	anim_end = false;
-	/*只有合并块用到了这个函数,所以不用把数字归零*/
+	/*仅为图形层面的删除块，num[][]的数据没改*/
 	//num[x][y] = 0;
 }
 void _2048::graphics_delete_block(cocos2d::Node* block, cocos2d::Node* label, bool use_anim) {
@@ -481,15 +489,14 @@ void _2048::graphics_delete_block(cocos2d::Node* block, cocos2d::Node* label, bo
 		else
 			scene->removeChild(label);
 	}
-	anim_end = false;
-	/*只有合并块用到了这个函数,所以不用把数字归零*/
+	anim_end = false;//todo delete this?
 	//num[x][y] = 0;
 }
 void _2048::graphics_move_block(int x, int y, int move_length, int orientation, bool merge) {
 	cocos2d::EaseIn* animation = nullptr;
 	cocos2d::Sequence* animation_with_callback = nullptr;
-	constexpr auto duration = 0.3;
-	constexpr auto rate = 0.3;
+	constexpr auto duration = 0.3f;
+	constexpr auto rate = 0.3f;
 	cocos2d::Node* curr_block = _2048_block[x][y];
 	cocos2d::Node* curr_label = _2048_block_label[x][y];
 	if (orientation == UP) {
@@ -588,6 +595,17 @@ void _2048::graphics_move_block(int x, int y, int move_length, int orientation, 
 }
 
 
-#ifdef CHEAT_ENABLED
-
-#endif
+cocos2d::Vec2* _2048::get_num_from_position(int x, int y) {
+	for (int i = 1; i < 5; i++) {
+		for (int j = 1;j < 5; j++) {
+			//这里的判断是直接从画背景的代码那里copy过来的,懒得优化
+			if (x >= _2048_origin_x + 20 + (20 + _2048_block_size) * (i - 1) &&
+				x <= _2048_origin_x + (20 + _2048_block_size) * i &&
+				y >= _2048_origin_y + 20 + (20 + _2048_block_size) * (j - 1) &&
+				y <= _2048_origin_y + (20 + _2048_block_size) * j)
+				//fixme 这里不应该这样写(返回局部变量指针)  but it works.....    cpp他真的 我哭死
+				return &cocos2d::Vec2(i-1,j-1)/*(int*)(num + 4 * (i - 1) + (j - 1))*/;
+		}
+	}
+	return nullptr;
+}

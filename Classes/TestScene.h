@@ -3,6 +3,10 @@
 
 #include "cocos2d.h"
 
+//注意:括号不要去掉(自己想想为什么)
+#define ABS(x) ((x)>=0?(x):-(x))
+#define _RGB(r,g,b) cocos2d::Color4F(cocos2d::Color4B(r,g,b,255))
+
 class TestScene : public cocos2d::Scene
 {
 public:

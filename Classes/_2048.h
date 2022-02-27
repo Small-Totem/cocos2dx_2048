@@ -3,12 +3,11 @@
 
 #include "cocos2d.h"
 
-//todo 作弊项
-//准备整一手悔棋&消去一个指定块 有机会再来搞吧
-#define CHEAT_ENABLED
-
 //用于放if里面 //已弃用
 //#define STR_EQU(str1,str2) (std::string(str1).compare(std::string(str2)) == 0) 
+
+//作弊项
+#define CHEAT_ENABLED
 
 
 class _2048
@@ -52,7 +51,7 @@ public:
 	void left();
 	void right();
 
-	/*@return 空的块之数量*/
+	/* @return 空的块之数量*/
 	int get_spare_count();
 	/* @param force 是否强制生成*/
 	void generate_block(bool use_animation=false,bool force=false);
@@ -68,10 +67,12 @@ public:
 	void print_game_over();
 	void game_over_onclick();
 
-#ifdef CHEAT_ENABLED
+	/*  @brief 把屏幕绝对坐标转为num[][]相对坐标
+		@return 坐标处的块对应的num[][]
+		eg. Vec2(1,2)即对应num[1][2]*/
+	cocos2d::Vec2* get_num_from_position(int x, int y);
 
 
-#endif
 
 private:
 	/*@return 不确定的那个x或y坐标(详见实现处的注释)*/

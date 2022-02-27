@@ -3,16 +3,17 @@
 #include "TestScene.h"
 #include "_2048.h"
 
-//注意:括号不要去掉(自己想想为什么)
-#define ABS(x) ((x)>=0?(x):-(x))
-#define _RGB(r,g,b) Color4F(Color4B(r,g,b,255))
-
 USING_NS_CC;
 
 Point touchBegan = Vec2(0, 0);
 Point touchEnded = Vec2(0, 0);
 Size visibleSize;
 Vec2 origin;
+
+#ifdef CHEAT_ENABLED
+int click_count = 0;
+bool cheat_enabled = false;
+#endif
 
 _2048* _2048_;
 
@@ -25,10 +26,6 @@ void TestScene::exec_move() {
     int move_x = touchBegan.x - touchEnded.x;
     int move_y = touchBegan.y - touchEnded.y;
 
-    if (ABS(move_x) < 10 && ABS(move_y) < 10) {
-        _2048_->print();
-        return;
-    }
     if (!_2048_->anim_end) {
         printf("!anim_end. move canceled.\n");
         return;
@@ -116,6 +113,8 @@ void TestScene::set_disposable_touch_listener(cocos2d::Node* node,
     _eventDispatcher->addEventListenerWithSceneGraphPriority(touch_listener0, node);
 }
 
+
+//这个函数能但不该被调用多次，因为touchBegan这些会被执行多次  待优化？
 void TestScene::set_global_touch_listener(cocos2d::Node* node,
     std::function<void(cocos2d::Touch*, cocos2d::Event*)> call_back) {
     auto touch_listener0 = cocos2d::EventListenerTouchOneByOne::create();
@@ -248,41 +247,21 @@ bool TestScene::init()
     menu->setPosition(Vec2::ZERO);
     this->addChild(menu, 1);
     */
-
-
-    //左上角label
-    std::string c_time = std::string("compile_time=")+std::string(__DATE__) 
-        + std::string(",") + std::string(__TIME__) + std::string("; ")
-        + std::string("target_platform=") + std::string(
-            CC_TARGET_PLATFORM == CC_PLATFORM_WIN32 ? "WIN32" :
-            (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID ? "ANDROID" :
-                (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX ? "LINUX" : std::to_string(CC_TARGET_PLATFORM))))
-        + std::string("\nhttps://github.com/Small-Totem");
-    auto label_compile_time = Label::createWithTTF(c_time, "fonts/fzmw.ttf", 30);
-    if (label_compile_time == nullptr)
-    {
-       printf("failed to load 'fonts/fzmw.ttf'");
-    }
-    else
-    {
-        label_compile_time->setPosition(Vec2(origin.x + label_compile_time->getContentSize().width / 2,
-            origin.y + visibleSize.height - label_compile_time->getContentSize().height/2));
- 
-        this->addChild(label_compile_time, 1);
-    }
     
 
     //开始画2048之界面(背景)
     int _2048_background_size = visibleSize.height - 20 * 2;//上下留白20px
-
     float _2048_origin_x = origin.x + visibleSize.width / 2 - _2048_background_size / 2;
     float _2048_origin_y = origin.y + 20;
+    float _2048_block_size = (_2048_background_size - 20 * 5) / 4;//4x4的块之间留白20px
+
+
     //自动适应_2048_background的位置
     drawRoundRect(background, Vec2(_2048_origin_x, _2048_origin_y),
         Vec2(origin.x + visibleSize.width / 2 + _2048_background_size / 2, origin.y + visibleSize.height - 20),
         50, 100, true, _RGB(56, 56, 56));
 
-    float _2048_block_size = (_2048_background_size - 20 * 5) / 4;//4x4的块之间留白20px
+    
     for (int i = 1; i < 5; i++) {
         for (int j = 1;j < 5; j++) {
             //自动适应
@@ -293,20 +272,113 @@ bool TestScene::init()
         }
     }
 
+
+
+    //左上角label
+    std::string c_time = std::string("compile_time=") + std::string(__DATE__)
+        + std::string(",") + std::string(__TIME__) + std::string("; ")
+        + std::string("target_platform=") + std::string(
+            CC_TARGET_PLATFORM == CC_PLATFORM_WIN32 ? "WIN32" :
+            (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID ? "ANDROID" :
+                (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX ? "LINUX" : std::to_string(CC_TARGET_PLATFORM))))
+        + std::string("\nhttps://github.com/Small-Totem");
+    auto label_compile_time = Label::createWithTTF(c_time, "fonts/fzmw.ttf", 30);
+
+#ifdef CHEAT_ENABLED
+    auto label_cheat = Label::createWithTTF("cheat_enabled=false", "fonts/fzmw.ttf", 30);
+#endif
+
+    if (label_compile_time == nullptr)//label_cheat就不判断了 虽然看着很难受。。。
+    {
+        printf("failed to load 'fonts/fzmw.ttf'");
+    }
+    else
+    {
+        label_compile_time->setPosition(Vec2(origin.x + label_compile_time->getContentSize().width / 2,
+            origin.y + visibleSize.height - label_compile_time->getContentSize().height / 2));
+
+#ifdef CHEAT_ENABLED
+        label_cheat->setPosition(Vec2(origin.x + label_cheat->getContentSize().width / 2,
+            origin.y + visibleSize.height - label_compile_time->getContentSize().height - label_cheat->getContentSize().height / 2));
+        this->addChild(label_cheat, 23333);
+#endif
+
+        this->addChild(label_compile_time, 23333);//fixme 这个order随便设的 只是想让它在最上面
+    }
+
+
+
+
+
+
+
     set_global_touch_listener(background,
         [=](Touch* touch, Event* event) {
-            exec_move();
+            int move_x = touchBegan.x - touchEnded.x;
+            int move_y = touchBegan.y - touchEnded.y;
+
+            //点击事件
+            if (ABS(move_x) < 10 && ABS(move_y) < 10) {
+                _2048_->print();
+
+#ifdef CHEAT_ENABLED
+                if (cheat_enabled) {
+                    Vec2* n = _2048_->get_num_from_position(touchEnded.x, touchEnded.y);
+
+                    if (n == nullptr)
+                        printf("get_num_from_position()->null\n");
+                    else {
+                        int _x = (int)(n->x);
+                        int _y = (int)(n->y);
+                        printf("get_num_from_position()->num[%d][%d]=%d\n", _x, _y, _2048_->num[_x][_y]);
+                        if (_2048_->num[_x][_y] == 0)
+                            return;
+
+                        _2048_->graphics_delete_block(_2048_->_2048_block[_x][_y], _2048_->_2048_block_label[_x][_y], true);
+
+                        //_2048_->num[_x][_y] += 1;
+                        //_2048_->graphics_new_block(_x, _y);
+                        _2048_->num[_x][_y] = 0;
+
+                        _2048_->anim_end = true;
+                    }
+                }
+                else {
+                    click_count++;
+                    if (click_count >= 10) {//连点10下开启作弊
+                        cheat_enabled = true;
+                        printf("cheat_enabled=true\n");
+                        label_cheat->setString("cheat_enabled=true");
+                    }
+                }
+#endif
+
+                return;
+            }
+            //非点击事件(拖拽)
+            else {
+
+#ifdef CHEAT_ENABLED
+                click_count = 0;
+#endif
+
+                exec_move();
+            }
         });
 
     _2048_ = new _2048(this, _2048_block_size, _2048_origin_x, _2048_origin_y);
 
 
 
+
+#define _2048_test
+
 #ifdef _2048_test
    int curr_num = 1;
     for (int i = 0;i < 4; i++) {
         for (int j = 0;j < 4; j++) {
             _2048_->num[i][j] = curr_num>2?curr_num:2;
+            //_2048_->num[i][j] = INT_MAX;
             _2048_->graphics_new_block(i, j);
             curr_num *= 2;
         }
